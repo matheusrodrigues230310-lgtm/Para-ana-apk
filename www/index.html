@@ -228,6 +228,9 @@ p{line-height:1.5}
 <main>
 
 <section class="page active" id="home">
+<main>
+
+<section class="page active" id="home">
   <div class="hero card">
     <small>SEU ESPAÇO PESSOAL</small>
     <h2 id="welcome">Olá, Ana! ♡</h2>
@@ -410,4 +413,468 @@ p{line-height:1.5}
     <h2>Meu sono</h2>
     <div class="field"><label>Data</label><input type="date" id="sleepDate"></div>
     <div class="grid">
-      <div class="field"><label>Hora de dormir</label><input
+      <div class="field"><label>Hora de dormir</label><input type="time" id="sleepStart"></div>
+      <div class="field"><label>Hora de acordar</label><input type="time" id="sleepEnd"></div>
+    </div>
+    <div class="field"><label>Qualidade</label><select id="sleepQuality"><option>Ótima</option><option>Boa</option><option>Regular</option><option>Ruim</option></select></div>
+    <button class="btn full" onclick="addSleep()">Salvar sono</button>
+    <div id="sleepHistory" style="margin-top:12px"></div>
+  </div>
+</section>
+<section class="page" id="settings">
+  <h1>Configurações ⚙️</h1>
+  <p class="sub">Seu aplicativo, suas preferências.</p>
+  <div class="card">
+    <h2>Meu perfil</h2>
+    <div class="field"><label>Seu nome</label><input id="userName" placeholder="Ana"></div>
+    <button class="btn full" onclick="saveName()">Salvar perfil</button>
+  </div>
+  <div class="card">
+    <h2>Senha de entrada</h2>
+    <p class="muted">Crie um PIN para bloquear a abertura do aplicativo.</p>
+    <div class="field"><label>Novo PIN (4 a 8 números)</label><input id="newPin" type="password" inputmode="numeric" maxlength="8"></div>
+    <div class="field"><label>Confirmar PIN</label><input id="confirmPin" type="password" inputmode="numeric" maxlength="8"></div>
+    <button class="btn full" onclick="savePin()">Salvar PIN</button>
+    <button class="btn light full" style="margin-top:9px" onclick="lockApp()">Bloquear agora</button>
+    <p class="small-note">Este PIN é um bloqueio básico da interface, não uma proteção criptográfica. Não é adequado para proteger dados altamente sensíveis.</p>
+  </div>
+  <div class="card">
+    <h2>Backup e restauração</h2>
+    <p class="muted">Exporte seus registros para guardar uma cópia. Você pode restaurá-los depois.</p>
+    <button class="btn secondary full" onclick="exportData()">↓ Baixar meu backup</button>
+    <div class="field"><label>Selecionar arquivo de backup</label><input type="file" id="importFile" accept=".json,application/json"></div>
+    <button class="btn purple full" onclick="importData()">Restaurar backup</button>
+  </div>
+  <div class="card">
+    <h2>Armazenamento</h2>
+    <p class="muted" id="storageInfo">Seus dados são salvos neste navegador.</p>
+    <button class="btn light full" onclick="checkStorage()">Verificar armazenamento</button>
+  </div>
+  <div class="card">
+    <h2>Sobre este aplicativo</h2>
+    <p class="muted">Feito especialmente para Ana, com carinho. ♡</p>
+    <p class="small-note">Versão 2.0 · Seus registros ficam no dispositivo.</p>
+    <button class="btn danger full" onclick="clearData()">Apagar todos os dados</button>
+  </div>
+</section>
+
+</main>
+
+<nav class="bottom">
+  <button class="nav active" data-page="home" onclick="showPage('home')"><b>⌂</b><span>Início</span></button>
+  <button class="nav" data-page="cycle" onclick="showPage('cycle')"><b>♡</b><span>Ciclo</span></button>
+  <button class="nav" data-page="finance" onclick="showPage('finance')"><b>◉</b><span>Finanças</span></button>
+  <button class="nav" data-page="routine" onclick="showPage('routine')"><b>☷</b><span>Rotina</span></button>
+  <button class="nav" data-page="water" onclick="showPage('water')"><b>♧</b><span>Água</span></button>
+  <button class="nav" data-page="selfcare" onclick="showPage('selfcare')"><b>✿</b><span>Cuidados</span></button>
+  <button class="nav" data-page="settings" onclick="showPage('settings')"><b>⚙</b><span>Ajustes</span></button>
+</nav>
+
+<div id="modalBg" class="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head"><h2 id="modalTitle">Adicionar</h2><button class="close" onclick="closeModal()">✕</button></div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div id="lock">
+  <div class="lock-box">
+    <div style="font-size:50px">♡</div>
+    <h1>Especialmente para Ana</h1>
+    <p class="muted">Seu espaço pessoal está protegido.</p>
+    <div class="field"><input id="pinInput" type="password" inputmode="numeric" maxlength="8" placeholder="Digite seu PIN" style="text-align:center;font-size:22px;letter-spacing:8px"></div>
+    <button class="btn full" onclick="unlock()">Entrar</button>
+    <p class="small-note" id="lockError"></p>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const today=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const dateObj=s=>new Date(s+'T12:00:00');
+const fmt=s=>dateObj(s).toLocaleDateString('pt-BR');
+const moneyFmt=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+const defaults={
+ name:'Ana',pin:'',tasks:[],events:[],periods:[],symptoms:[],
+ cycleLength:28,periodLength:5,transactions:[],goal:0,
+ waterGoal:2000,waterLogs:{},waterHistory:[],
+ habits:[],skin:{morning:[],night:[]},sleep:[]
+};
+
+let data;
+try{
+ const saved=JSON.parse(localStorage.getItem('anaDailyData')||'null');
+ data={...defaults,...(saved&&typeof saved==='object'?saved:{})};
+}catch(e){data={...defaults};}
+
+function save(){
+ try{
+  localStorage.setItem('anaDailyData',JSON.stringify(data));
+ }catch(e){
+  toast('Erro ao salvar. Faça um backup e verifique o espaço disponível.');
+ }
+}
+function toast(msg){
+ $('toast').textContent=msg;$('toast').style.display='block';
+ clearTimeout(window.toastTimer);
+ window.toastTimer=setTimeout(()=>$('toast').style.display='none',2600);
+}
+function safe(s){
+ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function showPage(id){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ $(id).classList.add('active');
+ document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page===id));
+ renderAll();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function openModal(title,html){
+ $('modalTitle').textContent=title;
+ $('modalContent').innerHTML=html;
+ $('modalBg').classList.add('open');
+}
+function closeModal(){$('modalBg').classList.remove('open');}
+
+function dateDefaults(){
+ ['periodDate','symDate','moneyDate','taskDate','eventDate','sleepDate'].forEach(id=>{
+  if($(id)&&!$(id).value)$(id).value=today();
+ });
+}
+
+function saveName(){
+ data.name=$('userName').value.trim()||'Ana';
+ save();renderHome();toast('Perfil atualizado! ♡');
+}
+function savePin(){
+ let a=$('newPin').value,b=$('confirmPin').value;
+ if(!/^\d{4,8}$/.test(a)){toast('Use de 4 a 8 números.');return;}
+ if(a!==b){toast('Os PINs não coincidem.');return;}
+ data.pin=a;save();$('newPin').value='';$('confirmPin').value='';
+ toast('PIN salvo!');
+}
+function lockApp(){
+ if(!data.pin){toast('Cadastre um PIN primeiro.');return;}
+ $('pinInput').value='';$('lockError').textContent='';
+ $('lock').style.display='flex';
+}
+function unlock(){
+ if($('pinInput').value===data.pin){
+  $('lock').style.display='none';$('pinInput').value='';
+  toast('Bem-vinda de volta! ♡');
+ }else{$('lockError').textContent='PIN incorreto. Tente novamente.';}
+}
+$('pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
+
+function renderHome(){
+ let h=new Date().getHours();
+ $('welcome').textContent=(h<12?'Bom dia':h<18?'Boa tarde':'Boa noite')+', '+(data.name||'Ana')+'! ♡';
+ $('todayDate').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+ let tasks=data.tasks.filter(t=>t.date===today());
+ $('homeTasks').textContent=tasks.filter(t=>t.done).length+'/'+tasks.length;
+ $('homeWater').textContent=(data.waterLogs[today()]||0)+' ml';
+ $('homeHabits').textContent=data.habits.filter(x=>(x.days||[]).includes(today())).length+'/'+data.habits.length;
+ let last=[...data.periods].sort().at(-1);
+ $('homeCycle').textContent=last?Math.max(1,Math.floor((dateObj(today())-dateObj(last))/86400000)+1)+'º dia':'—';
+ $('homeTaskList').innerHTML=tasks.length?tasks.map(t=>`
+ <div class="item"><button class="check ${t.done?'done':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</button>
+ <div class="grow"><strong style="${t.done?'text-decoration:line-through;color:#aaa':''}">${safe(t.name)}</strong><small>${t.time||'Sem horário'} · ${safe(t.priority)}</small></div></div>`).join(''):'<div class="empty">Nenhuma tarefa para hoje. Aproveite seu dia! ♡</div>';
+}
+
+function addTask(){
+ let name=$('taskName').value.trim();
+ if(!name){toast('Digite uma tarefa.');return;}
+ data.tasks.push({id:uid(),name,date:$('taskDate').value||today(),time:$('taskTime').value,priority:$('taskPriority').value,done:false});
+ save();$('taskName').value='';renderAll();toast('Tarefa adicionada!');
+}
+function toggleTask(id){
+ let t=data.tasks.find(x=>x.id===id);
+ if(t)t.done=!t.done;
+ save();renderAll();
+}
+function deleteTask(id){
+ data.tasks=data.tasks.filter(t=>t.id!==id);
+ save();renderAll();toast('Tarefa removida.');
+}
+  function renderTasks(){
+ let arr=[...data.tasks].sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
+ $('taskCount').textContent=data.tasks.length+' tarefas';
+ $('taskList').innerHTML=arr.length?arr.map(t=>`
+ <div class="item">
+ <button class="check ${t.done?'done':''}" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</button>
+ <div class="grow"><strong style="${t.done?'text-decoration:line-through;color:#aaa':''}">${safe(t.name)}</strong><small>${fmt(t.date)} · ${t.time||'Sem horário'} · ${safe(t.priority)}</small></div>
+ <button class="btn light small" onclick="deleteTask('${t.id}')">✕</button></div>`).join(''):'<div class="empty">Nenhuma tarefa cadastrada.</div>';
+}
+function addEvent(){
+ let name=$('eventName').value.trim();
+ if(!name){toast('Informe o compromisso.');return;}
+ data.events.push({id:uid(),name,date:$('eventDate').value||today(),time:$('eventTime').value});
+ save();$('eventName').value='';renderEvents();toast('Compromisso salvo!');
+}
+function deleteEvent(id){
+ data.events=data.events.filter(x=>x.id!==id);save();renderEvents();
+}
+function renderEvents(){
+ let arr=[...data.events].sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
+ $('eventList').innerHTML=arr.length?arr.map(x=>`
+ <div class="item"><div class="grow"><strong>${safe(x.name)}</strong><small>${fmt(x.date)} · ${x.time||'Sem horário'}</small></div>
+ <button class="btn light small" onclick="deleteEvent('${x.id}')">✕</button></div>`).join(''):'<div class="empty">Nenhum compromisso cadastrado.</div>';
+}
+
+function addPeriod(){
+ let d=$('periodDate').value;
+ if(!d||d>today()){toast('Escolha uma data válida.');return;}
+ if(!data.periods.includes(d))data.periods.push(d);
+ data.periods.sort();save();renderCycle();renderHome();toast('Início registrado!');
+}
+function addSymptom(){
+ let d=$('symDate').value||today();
+ data.symptoms.push({id:uid(),date:d,flow:$('flow').value,symptom:$('symptom').value,note:$('symNote').value.trim()});
+ save();$('symNote').value='';renderCycle();toast('Registro salvo!');
+}
+function saveCycleSettings(){
+ let c=+$('cycleLength').value,p=+$('periodLength').value;
+ if(c<15||c>60||p<1||p>15||p>=c){toast('Confira os valores informados.');return;}
+ data.cycleLength=c;data.periodLength=p;save();renderCycle();toast('Configurações atualizadas!');
+}
+let calDate=new Date();
+function changeMonth(n){calDate.setMonth(calDate.getMonth()+n);renderCalendar();}
+function renderCalendar(){
+ let y=calDate.getFullYear(),m=calDate.getMonth();
+ $('monthLabel').textContent=calDate.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+ let first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
+ let html=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(x=>`<div class="day-name">${x}</div>`).join('');
+ for(let i=0;i<first;i++)html+='<div></div>';
+ let last=[...data.periods].sort().at(-1);
+ for(let d=1;d<=days;d++){
+  let date=new Date(y,m,d),key=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  let cls='day';
+  if(key===today())cls+=' today';
+  if(data.periods.some(s=>{
+   let diff=Math.floor((dateObj(key)-dateObj(s))/86400000);
+   return diff>=0&&diff<data.periodLength;
+  }))cls+=' period';
+  if(last){
+   let diff=Math.floor((date-dateObj(last))/86400000);
+   let fertileStart=data.cycleLength-19;
+   if(diff>=fertileStart&&diff<=fertileStart+5)cls+=' fertile';
+  }
+  html+=`<button class="${cls}" onclick="selectCalendarDate('${key}')">${d}</button>`;
+ }
+ $('calendar').innerHTML=html;
+}
+function selectCalendarDate(d){
+ $('symDate').value=d;$('periodDate').value=d;
+ toast('Data selecionada: '+fmt(d));
+}
+function renderCycle(){
+ $('cycleLength').value=data.cycleLength;$('periodLength').value=data.periodLength;
+ let dates=[...data.periods].sort();
+ if(dates.length){
+  let next=dateObj(dates.at(-1));next.setDate(next.getDate()+data.cycleLength);
+  $('nextPeriod').textContent=fmt(next.getFullYear()+'-'+String(next.getMonth()+1).padStart(2,'0')+'-'+String(next.getDate()).padStart(2,'0'));
+  let day=Math.floor((dateObj(today())-dateObj(dates.at(-1)))/86400000)+1;
+  $('cycleInfo').textContent='Último início: '+fmt(dates.at(-1))+' · Dia '+Math.max(1,day)+' do ciclo.';
+ }else{
+  $('nextPeriod').textContent='Cadastre seu ciclo';
+  $('cycleInfo').textContent='Sem registros suficientes para estimar a próxima data.';
+ }
+ $('periodHistory').innerHTML=dates.length?dates.slice().reverse().map(d=>`<div class="item"><div class="grow"><strong>${fmt(d)}</strong><small>Início registrado</small></div></div>`).join(''):'<div class="empty">Seu histórico aparecerá aqui.</div>';
+ $('symHistory').innerHTML=data.symptoms.length?[...data.symptoms].reverse().slice(0,15).map(s=>`<div class="item"><div class="grow"><strong>${safe(s.symptom)} · ${safe(s.flow)}</strong><small>${fmt(s.date)} ${s.note?'· '+safe(s.note):''}</small></div></div>`).join(''):'<div class="empty">Nenhum sintoma registrado.</div>';
+ renderCalendar();
+}
+
+function addMoney(){
+ let desc=$('moneyDesc').value.trim(),v=Number($('moneyValue').value);
+ if(!desc||!Number.isFinite(v)||v<=0){toast('Preencha descrição e valor corretamente.');return;}
+ data.transactions.push({id:uid(),desc,value:v,type:$('moneyType').value,category:$('moneyCategory').value,date:$('moneyDate').value||today()});
+ save();$('moneyDesc').value='';$('moneyValue').value='';renderFinance();toast('Movimentação adicionada!');
+}
+function deleteMoney(id){
+ data.transactions=data.transactions.filter(x=>x.id!==id);save();renderFinance();
+}
+function saveGoal(){
+ let v=Number($('goalValue').value);
+ if(!Number.isFinite(v)||v<=0){toast('Informe uma meta válida.');return;}
+ data.goal=v;save();renderFinance();toast('Meta atualizada!');
+}
+function renderFinance(){
+ let month=today().slice(0,7);
+ let arr=data.transactions.filter(x=>x.date.startsWith(month));
+ let inc=arr.filter(x=>x.type==='in').reduce((a,b)=>a+b.value,0);
+ let out=arr.filter(x=>x.type==='out').reduce((a,b)=>a+b.value,0);
+ $('balance').textContent=moneyFmt(inc-out);
+ $('income').textContent=moneyFmt(inc);$('expense').textContent=moneyFmt(out);
+ $('goalValue').value=data.goal||'';
+ let totalIn=data.transactions.filter(x=>x.type==='in').reduce((a,b)=>a+b.value,0);
+ let totalOut=data.transactions.filter(x=>x.type==='out').reduce((a,b)=>a+b.value,0);
+ let saved=totalIn-totalOut;
+ let percent=data.goal?Math.max(0,Math.min(100,saved/data.goal*100)):0;
+ $('goalProgress').style.width=percent+'%';
+ $('goalText').textContent=data.goal?moneyFmt(saved)+' de '+moneyFmt(data.goal)+' · '+Math.round(percent)+'%':'Defina sua meta.';
+ $('moneyHistory').innerHTML=data.transactions.length?[...data.transactions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,40).map(x=>`
+ <div class="item"><div class="grow"><strong>${safe(x.desc)}</strong><small>${safe(x.category)} · ${fmt(x.date)}</small></div>
+ <strong style="color:${x.type==='in'?'#79a28b':'#c47e9c'}">${x.type==='in'?'+':'−'} ${moneyFmt(x.value)}</strong>
+ <button class="btn light small" onclick="deleteMoney('${x.id}')">✕</button></div>`).join(''):'<div class="empty">Nenhuma movimentação registrada.</div>';
+ let cats={};
+ arr.filter(x=>x.type==='out').forEach(x=>cats[x.category]=(cats[x.category]||0)+x.value);
+ let entries=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+ $('categoryChart').innerHTML=entries.length?entries.map(([k,v])=>`
+ <div style="margin:12px 0"><div class="row between"><strong style="font-size:11px">${safe(k)}</strong><small>${moneyFmt(v)}</small></div>
+ <div class="progress"><div style="width:${out?v/out*100:0}%"></div></div></div>`).join(''):'<div class="empty">Seus gastos aparecerão aqui.</div>';
+}
+
+function addWater(n){
+ let k=today();data.waterLogs[k]=(data.waterLogs[k]||0)+n;
+ data.waterHistory.push({date:k,amount:n,time:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})});
+ save();renderWater();renderHome();
+}
+function resetWater(){
+ if(!confirm('Zerar o consumo de hoje?'))return;
+ data.waterLogs[today()]=0;data.waterHistory=data.waterHistory.filter(x=>x.date!==today());
+ save();renderWater();renderHome();
+}
+function saveWaterGoal(){
+ let v=+$('waterGoal').value;
+   if(!Number.isFinite(v)||v<100){toast('Informe uma meta válida.');return;}
+ data.waterGoal=v;save();renderWater();toast('Meta atualizada!');
+}
+function renderWater(){
+ let total=data.waterLogs[today()]||0,goal=data.waterGoal||2000,p=Math.min(100,total/goal*100);
+ $('waterTotal').textContent=total.toLocaleString('pt-BR')+' ml';
+ $('waterProgress').style.width=p+'%';
+ $('waterPercent').textContent=Math.round(p)+'% da meta ('+goal+' ml)';
+ $('waterGoal').value=goal;
+ let hist=data.waterHistory.filter(x=>x.date===today()).slice().reverse();
+ $('waterHistory').innerHTML=hist.length?hist.map(x=>`<div class="item"><div class="grow"><strong>+${x.amount} ml</strong><small>${x.time}</small></div></div>`).join(''):'<div class="empty">Nenhum consumo registrado hoje.</div>';
+}
+
+function addSkin(type){
+ openModal(type==='morning'?'Cuidado da manhã':'Cuidado da noite',`
+ <div class="field"><label>Nome do cuidado</label><input id="skinNew" placeholder="Ex.: Protetor solar"></div>
+ <button class="btn full" onclick="saveSkin('${type}')">Salvar cuidado</button>`);
+}
+function saveSkin(type){
+ let v=$('skinNew').value.trim();
+ if(!v){toast('Digite o cuidado.');return;}
+ data.skin[type].push({id:uid(),name:v,done:false,date:today()});
+ save();closeModal();renderSelfcare();
+}
+function toggleSkin(type,id){
+ let x=data.skin[type].find(a=>a.id===id);
+ if(x){if(x.date!==today()){x.date=today();x.done=false;}x.done=!x.done;}
+ save();renderSelfcare();
+}
+function deleteSkin(type,id){
+ data.skin[type]=data.skin[type].filter(x=>x.id!==id);save();renderSelfcare();
+}
+function addHabit(){
+ openModal('Novo hábito',`
+ <div class="field"><label>Nome do hábito</label><input id="habitNew" placeholder="Ex.: Ler 10 minutos"></div>
+ <button class="btn full" onclick="saveHabit()">Criar hábito</button>`);
+}
+function saveHabit(){
+ let name=$('habitNew').value.trim();
+ if(!name){toast('Digite o hábito.');return;}
+ data.habits.push({id:uid(),name,days:[]});
+ save();closeModal();renderSelfcare();renderHome();
+}
+function toggleHabit(id){
+ let h=data.habits.find(x=>x.id===id);if(!h)return;
+ h.days=h.days||[];
+ h.days.includes(today())?h.days=h.days.filter(x=>x!==today()):h.days.push(today());
+ save();renderSelfcare();renderHome();
+}
+function deleteHabit(id){
+ data.habits=data.habits.filter(x=>x.id!==id);save();renderSelfcare();renderHome();
+}
+function addSleep(){
+ let d=$('sleepDate').value||today(),start=$('sleepStart').value,end=$('sleepEnd').value;
+ if(!start||!end){toast('Informe os horários.');return;}
+ let a=start.split(':').map(Number),b=end.split(':').map(Number);
+ let mins=b[0]*60+b[1]-a[0]*60-a[1];if(mins<=0)mins+=1440;
+ data.sleep.push({id:uid(),date:d,start,end,minutes:mins,quality:$('sleepQuality').value});
+ save();renderSelfcare();toast('Sono registrado!');
+}
+function renderSelfcare(){
+ ['morning','night'].forEach(type=>{
+  let id=type==='morning'?'skinMorning':'skinNight';
+  $(id).innerHTML=data.skin[type].length?data.skin[type].map(x=>`
+  <div class="item"><button class="check ${x.done&&x.date===today()?'done':''}" onclick="toggleSkin('${type}','${x.id}')">${x.done&&x.date===today()?'✓':''}</button>
+  <div class="grow"><strong>${safe(x.name)}</strong><small>${x.date===today()?'Atualizado hoje':'Disponível diariamente'}</small></div>
+  <button class="btn light small" onclick="deleteSkin('${type}','${x.id}')">✕</button></div>`).join(''):'<div class="empty">Adicione seus cuidados.</div>';
+ });
+ $('habitList').innerHTML=data.habits.length?data.habits.map(h=>{
+  let done=(h.days||[]).includes(today());
+  return `<div class="item"><button class="check ${done?'done':''}" onclick="toggleHabit('${h.id}')">${done?'✓':''}</button>
+  <div class="grow"><strong>${safe(h.name)}</strong><small>${(h.days||[]).length} dias registrados</small></div>
+  <button class="btn light small" onclick="deleteHabit('${h.id}')">✕</button></div>`;
+ }).join(''):'<div class="empty">Crie seus primeiros hábitos.</div>';
+ $('sleepHistory').innerHTML=data.sleep.length?data.sleep.slice().reverse().slice(0,15).map(x=>`
+ <div class="item"><div class="grow"><strong>${fmt(x.date)} · ${(x.minutes/60).toFixed(1).replace('.',',')} horas</strong><small>${x.start} até ${x.end} · ${safe(x.quality)}</small></div></div>`).join(''):'<div class="empty">Nenhum registro de sono.</div>';
+}
+
+function exportData(){
+ let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ let url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='backup-ana-'+today()+'.json';a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ toast('Backup preparado!');
+}
+function importData(){
+ let file=$('importFile').files[0];
+ if(!file){toast('Selecione um arquivo.');return;}
+ let r=new FileReader();
+ r.onload=()=>{
+  try{
+   let x=JSON.parse(r.result);
+   if(!x||typeof x!=='object'||Array.isArray(x))throw Error();
+   if(!confirm('A restauração substituirá os registros atuais. Continuar?'))return;
+   data={...defaults,...x};
+   save();renderAll();toast('Backup restaurado!');
+  }catch(e){toast('Arquivo de backup inválido.');}
+ };
+ r.readAsText(file);
+}
+function checkStorage(){
+ try{
+  localStorage.setItem('_daily_test','ok');
+  localStorage.removeItem('_daily_test');
+  $('storageInfo').textContent='Armazenamento local disponível. Seus dados estão salvos neste navegador.';
+  toast('Armazenamento funcionando!');
+ }catch(e){
+  $('storageInfo').textContent='Não foi possível acessar o armazenamento.';
+  toast('Verifique as permissões do navegador.');
+ }
+}
+function clearData(){
+ if(!confirm('Todos os registros serão apagados. Deseja continuar?'))return;
+ if(!confirm('Tem certeza? Faça um backup antes se quiser guardar os registros.'))return;
+ localStorage.removeItem('anaDailyData');
+ data={...defaults};
+ save();renderAll();toast('Dados apagados.');
+}
+
+function renderAll(){
+ renderHome();renderTasks();renderEvents();renderCycle();
+ renderFinance();renderWater();renderSelfcare();
+}
+function init(){
+ dateDefaults();
+ $('userName').value=data.name||'Ana';
+ if(data.pin)$('lock').style.display='flex';
+ renderAll();
+}
+init();
+
+// Salva uma cópia automaticamente quando o navegador entra em segundo plano.
+document.addEventListener('visibilitychange',()=>{
+ if(document.visibilityState==='hidden')save();
+});
+window.addEventListener('pagehide',save);
+</script>
+</body>
+</html>
