@@ -1,1 +1,413 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#f9eff6">
+<title>Feito especialmente para a Ana ♡</title>
+<style>
+:root{
+  --bg:#faf7fa;
+  --surface:#fff;
+  --pink:#d58caf;
+  --pink-dark:#b96f94;
+  --pink-light:#f7e5ef;
+  --purple:#a891c6;
+  --purple-light:#eee8f5;
+  --text:#493b48;
+  --muted:#a394a2;
+  --line:#f0e8ef;
+  --green:#81a991;
+  --blue:#84a9c4;
+  --shadow:0 8px 30px rgba(126,83,112,.07);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  padding-bottom:100px;
+  -webkit-tap-highlight-color:transparent;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+header{
+  position:sticky;top:0;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;
+  background:#faf7faeF;backdrop-filter:blur(18px);
+  border-bottom:1px solid #f0e8ef;
+}
+.brand{font-size:20px;font-weight:800;letter-spacing:-.7px}
+.brand span{color:var(--pink-dark)}
+.header-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.avatar{
+  width:42px;height:42px;border-radius:15px;
+  display:grid;place-items:center;
+  background:linear-gradient(145deg,#f6dce9,#e9dff3);
+  color:#a96f91;font-size:21px;
+  box-shadow:0 4px 12px #c99ab31c;
+}
+main{max-width:650px;margin:auto;padding:0 16px}
+.page{display:none;opacity:0}
+.page.active{display:block;animation:pageIn .35s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes pageIn{
+  from{opacity:0;transform:translateY(13px)}
+  to{opacity:1;transform:translateY(0)}
+}
+h1{font-size:26px;letter-spacing:-1px;margin:18px 0 5px}
+h2{font-size:17px;letter-spacing:-.3px;margin:0 0 13px}
+h3{font-size:13px;margin:0}
+p{line-height:1.5}
+.sub{font-size:12px;color:var(--muted);margin:0 0 19px}
+.card{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:21px;padding:17px;margin-bottom:13px;
+  box-shadow:var(--shadow);
+}
+.hero{
+  border:0;position:relative;overflow:hidden;
+  padding:23px 21px;
+  background:linear-gradient(125deg,#f5dce9,#eee5f6 70%,#e8e9f6);
+  min-height:170px;
+}
+.hero:after{
+  content:"♡";position:absolute;right:8px;bottom:-45px;
+  font-size:150px;color:#ffffff55;pointer-events:none;
+}
+.hero small{color:#916d87;font-size:10px;letter-spacing:1.4px;font-weight:700}
+.hero h2{font-size:25px;line-height:1.2;max-width:80%;margin:13px 0 7px;color:#61465b}
+.hero p{font-size:12px;color:#92768b;margin:0}
+.hero .date{margin-top:18px;font-size:10px;color:#8d7186}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:22px 2px 12px}
+.section-title button{background:none;border:0;color:var(--pink-dark);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{
+  background:white;border:1px solid var(--line);border-radius:18px;
+  padding:15px;min-width:0;
+}
+.stat-icon{font-size:21px}
+.stat strong{display:block;font-size:19px;margin:8px 0 3px;letter-spacing:-.5px}
+.stat small{font-size:10px;color:var(--muted)}
+.btn{
+  border:0;border-radius:13px;padding:12px 16px;
+  background:linear-gradient(135deg,var(--pink),#c783a8);
+  color:white;font-size:12px;font-weight:700;
+  box-shadow:0 4px 12px #d58caf30;
+  transition:transform .2s,filter .2s;
+}
+.btn:active{transform:scale(.96);filter:brightness(.95)}
+.btn.secondary{background:var(--pink-light);color:#a66d8c;box-shadow:none}
+.btn.purple{background:var(--purple-light);color:#846c9e;box-shadow:none}
+.btn.light{background:#f7f3f7;color:var(--text);box-shadow:none}
+.btn.danger{background:#fbe9e9;color:#b96868;box-shadow:none}
+.btn.small{padding:8px 11px;font-size:10px}
+.btn.full{width:100%}
+.field{margin:12px 0}
+.field label{display:block;font-size:10px;color:var(--muted);margin-bottom:7px}
+.field input,.field select,.field textarea{
+  width:100%;padding:13px;border:1px solid var(--line);
+  border-radius:13px;background:#fcfafc;color:var(--text);
+  outline:none;font-size:13px;transition:border .2s,box-shadow .2s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--pink);box-shadow:0 0 0 3px #f7e5ef;
+}
+.field textarea{resize:vertical;min-height:80px}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.muted{font-size:11px;color:var(--muted)}
+.tag{font-size:10px;background:var(--pink-light);color:#a66d8c;padding:6px 10px;border-radius:20px}
+.item{
+  display:flex;align-items:center;gap:10px;padding:12px 0;
+  border-bottom:1px solid #f4eef3;
+}
+.item:last-child{border:0}
+.item strong{font-size:12px;overflow-wrap:anywhere}
+.item small{display:block;font-size:10px;color:var(--muted);margin-top:4px}
+.check{
+  width:22px;height:22px;flex-shrink:0;border-radius:8px;
+  border:1px solid #dfcfdb;background:white;color:white;
+  transition:.2s;
+}
+.check.done{background:var(--pink);border-color:var(--pink);transform:scale(1.04)}
+.progress{height:8px;background:#f2eaf1;border-radius:20px;overflow:hidden;margin:10px 0}
+.progress div{height:100%;background:linear-gradient(90deg,#d58caf,#b99dce);border-radius:20px;transition:width .4s}
+.empty{text-align:center;padding:18px 8px;color:var(--muted);font-size:11px}
+.bottom{
+  position:fixed;bottom:0;left:0;right:0;z-index:15;
+  background:#ffffffed;backdrop-filter:blur(20px);
+  border-top:1px solid var(--line);
+  display:flex;justify-content:space-around;align-items:center;
+  padding:9px 2px max(10px,env(safe-area-inset-bottom));
+}
+.nav{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  border:0;background:none;color:#ad9fab;
+  min-width:45px;padding:5px 2px;border-radius:12px;
+  transition:all .25s;
+}
+.nav b{font-size:20px;font-weight:400}
+.nav span{font-size:9px}
+.nav.active{color:var(--pink-dark);transform:translateY(-3px)}
+.nav.active b{background:var(--pink-light);padding:5px 11px;border-radius:12px}
+.month-head{display:flex;justify-content:space-between;align-items:center;margin:10px 0}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.day-name{font-size:9px;color:var(--muted);padding:8px 0}
+.day{
+  aspect-ratio:1;border:0;border-radius:11px;
+  background:#faf7fa;color:var(--text);font-size:11px;
+}
+.day.today{outline:2px solid var(--pink)}
+.day.period{background:#f3d6e5;color:#975b7c}
+.day.fertile{background:#e9dff3;color:#80649c}
+.day.selected{background:var(--pink-dark);color:white}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:13px}
+.legend span{font-size:9px;color:var(--muted)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.chart{height:130px;display:flex;align-items:end;gap:7px;padding-top:15px}
+.bar-wrap{flex:1;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px}
+.bar{width:100%;max-width:30px;border-radius:7px 7px 2px 2px;background:linear-gradient(#d9b4cc,#b58db5);min-height:3px}
+.bar-wrap small{font-size:9px;color:var(--muted)}
+.modal-bg{
+  position:fixed;inset:0;background:#382b3970;z-index:30;
+  display:none;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(3px);
+}
+.modal-bg.open{display:flex}
+.modal{
+  width:100%;max-width:600px;background:white;
+  border-radius:25px 25px 0 0;padding:22px 19px max(25px,env(safe-area-inset-bottom));
+  max-height:88vh;overflow:auto;animation:modalIn .3s ease;
+}
+@keyframes modalIn{from{transform:translateY(50px);opacity:.5}to{transform:none;opacity:1}}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.close{border:0;background:#f6eff5;border-radius:50%;width:34px;height:34px;color:#926c86}
+#toast{
+  position:fixed;bottom:95px;left:50%;transform:translateX(-50%);
+  background:#493b48;color:white;padding:12px 18px;border-radius:14px;
+  font-size:11px;z-index:60;display:none;max-width:90%;text-align:center;
+  box-shadow:0 5px 20px #0002;
+}
+.small-note{font-size:10px;color:var(--muted);line-height:1.6}
+.divider{height:1px;background:var(--line);margin:13px 0}
+.quick{
+  border:1px solid var(--line);background:white;border-radius:18px;
+  padding:15px;text-align:left;box-shadow:var(--shadow);
+  color:var(--text);transition:.2s;
+}
+.quick:active{transform:scale(.97)}
+.quick .emoji{font-size:25px}
+.quick strong{display:block;font-size:12px;margin-top:9px}
+.quick small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+#lock{
+  position:fixed;inset:0;background:linear-gradient(145deg,#f8eaf2,#eee8f7);
+  z-index:100;display:none;align-items:center;justify-content:center;padding:25px;
+}
+.lock-box{width:100%;max-width:350px;text-align:center}
+.lock-box h1{font-size:34px}
+@media(min-width:650px){
+  main{padding:0 25px}
+  .bottom{max-width:650px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0}
+  .modal-bg{align-items:center}
+  .modal{border-radius:25px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand">feito especialmente para a <span>Ana ♡</span></div>
+    <div class="header-sub">Seu cantinho, suas coisas, seu tempo.</div>
+  </div>
+  <div class="avatar">♡</div>
+</header>
+
+<main>
+
+<section class="page active" id="home">
+  <div class="hero card">
+    <small>SEU ESPAÇO PESSOAL</small>
+    <h2 id="welcome">Olá, Ana! ♡</h2>
+    <p>Que bom ter você por aqui. Cuide de você hoje.</p>
+    <div class="date" id="todayDate"></div>
+  </div>
+
+  <div class="section-title"><h2>Seu dia em resumo</h2><span class="tag">Hoje</span></div>
+  <div class="grid">
+    <div class="stat"><span class="stat-icon">💧</span><strong id="homeWater">0 ml</strong><small>Água consumida</small></div>
+    <div class="stat"><span class="stat-icon">☷</span><strong id="homeTasks">0/0</strong><small>Tarefas concluídas</small></div>
+    <div class="stat"><span class="stat-icon">🌸</span><strong id="homeCycle">—</strong><small>Ciclo menstrual</small></div>
+    <div class="stat"><span class="stat-icon">✧</span><strong id="homeHabits">0/0</strong><small>Hábitos realizados</small></div>
+  </div>
+
+  <div class="section-title"><h2>Atalhos</h2></div>
+  <div class="grid">
+    <button class="quick" onclick="showPage('cycle')"><span class="emoji">🌸</span><strong>Meu ciclo</strong><small>Calendário menstrual</small></button>
+    <button class="quick" onclick="showPage('finance')"><span class="emoji">💗</span><strong>Finanças</strong><small>Controle de dinheiro</small></button>
+    <button class="quick" onclick="showPage('routine')"><span class="emoji">📝</span><strong>Minha rotina</strong><small>Tarefas e compromissos</small></button>
+    <button class="quick" onclick="showPage('selfcare')"><span class="emoji">🌷</span><strong>Autocuidado</strong><small>Hábitos e sono</small></button>
+  </div>
+
+  <div class="section-title"><h2>Suas tarefas de hoje</h2><button onclick="showPage('routine')">Ver todas →</button></div>
+  <div class="card" id="homeTaskList"></div>
+
+  <div class="card" style="background:linear-gradient(130deg,#f9edf3,#f1ebf7);border:0">
+    <div style="font-size:23px">♡</div>
+    <h2 style="margin-top:9px">Não esqueça de você.</h2>
+    <p class="muted">Não precisa fazer tudo de uma vez. Um pequeno passo já é uma conquista.</p>
+  </div>
+</section>
+
+<section class="page" id="cycle">
+  <h1>Meu ciclo 🌸</h1>
+  <p class="sub">Acompanhe seu ciclo com carinho e atenção.</p>
+  <div class="card">
+    <small class="muted">PRÓXIMA MENSTRUAÇÃO ESTIMADA</small>
+    <h1 id="nextPeriod" style="font-size:25px">Cadastre seu ciclo</h1>
+    <p class="muted" id="cycleInfo">Registre o início da menstruação.</p>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Calendário menstrual</h2><div class="row"><button class="btn light small" onclick="changeMonth(-1)">‹</button><button class="btn light small" onclick="changeMonth(1)">›</button></div></div>
+    <div class="month-head"><strong id="monthLabel"></strong></div>
+    <div class="calendar" id="calendar"></div>
+    <div class="legend">
+      <span><i class="dot" style="background:#e8b5ce"></i>Menstruação</span>
+      <span><i class="dot" style="background:#cdbce1"></i>Período fértil estimado</span>
+      <span><i class="dot" style="background:#d58eaf"></i>Hoje</span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Registrar menstruação</h2>
+    <div class="field"><label>Primeiro dia do fluxo</label><input type="date" id="periodDate"></div>
+    <button class="btn full" onclick="addPeriod()">Salvar registro</button>
+  </div>
+  <div class="card">
+    <h2>Como estou me sentindo?</h2>
+    <div class="field"><label>Data</label><input type="date" id="symDate"></div>
+    <div class="field"><label>Fluxo</label><select id="flow"><option>Não informado</option><option>Leve</option><option>Moderado</option><option>Intenso</option></select></div>
+    <div class="field"><label>Sintomas</label><select id="symptom"><option>Nenhum</option><option>Cólica</option><option>Dor de cabeça</option><option>Inchaço</option><option>Cansaço</option><option>Acne</option><option>Sensibilidade nos seios</option><option>Alteração de humor</option></select></div>
+    <div class="field"><label>Observações</label><textarea id="symNote" placeholder="Como está se sentindo?"></textarea></div>
+    <button class="btn full" onclick="addSymptom()">Salvar sintomas</button>
+  </div>
+  <div class="card">
+    <h2>Configurações do ciclo</h2>
+    <div class="field"><label>Duração média do ciclo (dias)</label><input id="cycleLength" type="number" min="15" max="60"></div>
+    <div class="field"><label>Duração média da menstruação (dias)</label><input id="periodLength" type="number" min="1" max="15"></div>
+    <button class="btn secondary full" onclick="saveCycleSettings()">Atualizar ciclo</button>
+    <p class="small-note">As datas são estimativas, não previsões garantidas. A janela fértil não deve ser usada para evitar gravidez. O aplicativo não substitui orientação médica.</p>
+  </div>
+  <div class="card"><h2>Histórico</h2><div id="periodHistory"></div><div class="divider"></div><h3>Registros de sintomas</h3><div id="symHistory"></div></div>
+</section>
+
+<section class="page" id="finance">
+  <h1>Meu dinheiro 💗</h1>
+  <p class="sub">Organize suas finanças com tranquilidade.</p>
+  <div class="card" style="background:linear-gradient(130deg,#f5e3ee,#f0e9f7)">
+    <small class="muted">SALDO DESTE MÊS</small>
+    <h1 id="balance" style="font-size:30px">R$ 0,00</h1>
+    <div class="grid">
+      <div><small class="muted">Entradas</small><h2 id="income" style="color:#6f9b80">R$ 0,00</h2></div>
+      <div><small class="muted">Despesas</small><h2 id="expense" style="color:#bd7999">R$ 0,00</h2></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Adicionar movimentação</h2>
+    <div class="field"><label>Descrição</label><input id="moneyDesc" placeholder="Ex.: Compra no mercado"></div>
+    <div class="grid">
+      <div class="field"><label>Valor (R$)</label><input id="moneyValue" type="number" min=".01" step=".01" placeholder="0,00"></div>
+      <div class="field"><label>Tipo</label><select id="moneyType"><option value="out">Despesa</option><option value="in">Entrada</option></select></div>
+    </div>
+    <div class="field"><label>Categoria</label><select id="moneyCategory"><option>Alimentação</option><option>Transporte</option><option>Compras</option><option>Saúde</option><option>Beleza</option><option>Estudos</option><option>Lazer</option><option>Moradia</option><option>Salário</option><option>Outros</option></select></div>
+    <div class="field"><label>Data</label><input type="date" id="moneyDate"></div>
+    <button class="btn full" onclick="addMoney()">Adicionar movimentação</button>
+  </div>
+  <div class="card">
+    <h2>Meta de economia</h2>
+    <div class="field"><label>Meta desejada (R$)</label><input type="number" id="goalValue" min="1" placeholder="500"></div>
+    <button class="btn secondary full" onclick="saveGoal()">Salvar meta</button>
+    <div class="progress"><div id="goalProgress" style="width:0%"></div></div>
+    <p class="muted" id="goalText">Defina sua meta.</p>
+  </div>
+  <div class="card">
+    <h2>Gastos por categoria</h2><div id="categoryChart"></div>
+  </div>
+  <div class="card"><h2>Movimentações</h2><div id="moneyHistory"></div></div>
+</section>
+
+<section class="page" id="routine">
+  <h1>Minha rotina 📝</h1>
+  <p class="sub">Organize seu dia sem complicação.</p>
+  <div class="card">
+    <h2>Nova tarefa</h2>
+    <div class="field"><label>O que precisa fazer?</label><input id="taskName" placeholder="Ex.: Estudar matemática"></div>
+    <div class="grid">
+      <div class="field"><label>Data</label><input id="taskDate" type="date"></div>
+      <div class="field"><label>Horário</label><input id="taskTime" type="time"></div>
+    </div>
+    <div class="field"><label>Prioridade</label><select id="taskPriority"><option>Normal</option><option>Importante</option><option>Urgente</option></select></div>
+    <button class="btn full" onclick="addTask()">Adicionar tarefa</button>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Lista de tarefas</h2><span class="tag" id="taskCount">0 tarefas</span></div>
+    <div id="taskList"></div>
+  </div>
+  <div class="card">
+    <h2>Novo compromisso</h2>
+    <div class="field"><label>Descrição</label><input id="eventName" placeholder="Ex.: Consulta médica"></div>
+    <div class="grid">
+      <div class="field"><label>Data</label><input id="eventDate" type="date"></div>
+      <div class="field"><label>Horário</label><input id="eventTime" type="time"></div>
+    </div>
+    <button class="btn secondary full" onclick="addEvent()">Salvar compromisso</button>
+    <div class="divider"></div><h3>Minha agenda</h3><div id="eventList"></div>
+  </div>
+</section>
+
+<section class="page" id="water">
+  <h1>Hidratação 💧</h1>
+  <p class="sub">Pequenos cuidados fazem diferença.</p>
+  <div class="card" style="text-align:center;padding:25px">
+    <div style="font-size:45px">💧</div>
+    <h1 id="waterTotal" style="font-size:36px">0 ml</h1>
+    <p class="muted">consumidos hoje</p>
+    <div class="progress" style="height:11px"><div id="waterProgress" style="width:0%"></div></div>
+    <p class="muted" id="waterPercent">0% da meta</p>
+    <div class="grid">
+      <button class="btn" onclick="addWater(200)">+ 200 ml</button>
+      <button class="btn secondary" onclick="addWater(300)">+ 300 ml</button>
+      <button class="btn purple" onclick="addWater(500)">+ 500 ml</button>
+      <button class="btn light" onclick="addWater(100)">+ 100 ml</button>
+    </div>
+    <button class="btn danger small" style="margin-top:13px" onclick="resetWater()">Zerar consumo de hoje</button>
+  </div>
+  <div class="card">
+    <h2>Minha meta</h2>
+    <div class="field"><label>Meta em ml</label><input id="waterGoal" type="number" min="100" step="100"></div>
+    <button class="btn secondary full" onclick="saveWaterGoal()">Atualizar meta</button>
+    <p class="small-note">A necessidade de água varia de pessoa para pessoa. Ajuste a meta conforme sua rotina e orientação profissional.</p>
+  </div>
+  <div class="card"><h2>Histórico de hoje</h2><div id="waterHistory"></div></div>
+</section>
+
+<section class="page" id="selfcare">
+  <h1>Meu autocuidado 🌷</h1>
+  <p class="sub">Um momento reservado para cuidar de você.</p>
+  <div class="card">
+    <h2>Rotina de pele</h2>
+    <div class="section-title"><h3>☀️ Manhã</h3><button onclick="addSkin('morning')">+ Adicionar</button></div>
+    <div id="skinMorning"></div>
+    <div class="section-title"><h3>🌙 Noite</h3><button onclick="addSkin('night')">+ Adicionar</button></div>
+    <div id="skinNight"></div>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Meus hábitos</h2><button class="btn secondary small" onclick="addHabit()">+ Novo</button></div>
+    <div id="habitList"></div>
+  </div>
+  <div class="card">
+    <h2>Meu sono</h2>
+    <div class="field"><label>Data</label><input type="date" id="sleepDate"></div>
+    <div class="grid">
+      <div class="field"><label>Hora de dormir</label><input
