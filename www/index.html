@@ -639,30 +639,55 @@ function saveCycleSettings(){
 }
 let calDate=new Date();
 function changeMonth(n){calDate.setMonth(calDate.getMonth()+n);renderCalendar();}
+
 function renderCalendar(){
  let y=calDate.getFullYear(),m=calDate.getMonth();
- $('monthLabel').textContent=calDate.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-  let first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
- let html=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(x=>`<div class="day-name">${x}</div>`).join('');
+
+ $('monthLabel').textContent=calDate.toLocaleDateString('pt-BR',{
+  month:'long',year:'numeric'
+ });
+
+ let first=new Date(y,m,1).getDay();
+ let days=new Date(y,m+1,0).getDate();
+
+ let html=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
+ .map(x=>`<div class="day-name">${x}</div>`).join('');
+
  for(let i=0;i<first;i++)html+='<div></div>';
- let last=[...data.periods].sort().at(-1);
+
+ let periods=[...data.periods].sort();
+
  for(let d=1;d<=days;d++){
-  let date=new Date(y,m,d),key=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  let date=new Date(y,m,d);
+  let key=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+
   let cls='day';
+
   if(key===today())cls+=' today';
-  if(data.periods.some(s=>{
-   let diff=Math.floor((dateObj(key)-dateObj(s))/86400000);
+
+  let isPeriod=periods.some(s=>{
+   let diff=Math.round((dateObj(key)-dateObj(s))/86400000);
    return diff>=0&&diff<data.periodLength;
-  }))cls+=' period';
-  if(last){
-   let diff=Math.floor((date-dateObj(last))/86400000);
+  });
+
+  if(isPeriod)cls+=' period';
+
+  if(periods.length){
+   let last=periods[periods.length-1];
+   let diff=Math.round((dateObj(key)-dateObj(last))/86400000);
    let fertileStart=data.cycleLength-19;
-   if(diff>=fertileStart&&diff<=fertileStart+5)cls+=' fertile';
+
+   if(diff>=fertileStart&&diff<=fertileStart+5){
+    cls+=' fertile';
+   }
   }
+
   html+=`<button class="${cls}" onclick="selectCalendarDate('${key}')">${d}</button>`;
  }
+
  $('calendar').innerHTML=html;
 }
+  
 function selectCalendarDate(d){
  $('symDate').value=d;$('periodDate').value=d;
  toast('Data selecionada: '+fmt(d));
